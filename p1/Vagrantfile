@@ -5,14 +5,14 @@
 # configures the configuration version (we support older styles for
 # backwards compatibility). Please don't change it unless you know what
 # you're doing.
-Vagrant.configure("2") do |config|
-  # The most common configuration options are documented and commented below.
-  # For a complete reference, please see the online documentation at
-  # https://docs.vagrantup.com.
+# The most common configuration options are documented and commented below.
+# For a complete reference, please see the online documentation at
+# https://docs.vagrantup.com.
 
-  # Every Vagrant development environment requires a box. You can search for
-  # boxes at https://vagrantcloud.com/search.
-  config.vm.box = "boxomatic/debian-12"
+# Every Vagrant development environment requires a box. You can search for
+# boxes at https://vagrantcloud.com/search.
+Vagrant.configure("2") do |config|
+  config.vm.box = "debian/bookworm64"
 
   config.vm.provider :virtualbox do |vall|
     vall.customize ["modifyvm", :id, "--memory", 1024] 
@@ -23,8 +23,9 @@ Vagrant.configure("2") do |config|
     pjayS.vm.hostname = "pjayS"
     pjayS.vm.network "private_network", ip: "192.168.56.110"
     pjayS.vm.provider "virtualbox" do |v|
-        v.customize["modifyvm", :id, "--name", "pjayS"]
+      v.customize  ["modifyvm", :id, "--name", "pjayS"]
     end
+    pjayS.vm.provision "shell", path: "scripts/server.sh"
   end
   
   config.vm.define "pjaySW" do |pjaySW|
@@ -33,6 +34,14 @@ Vagrant.configure("2") do |config|
     pjaySW.vm.provider "virtualbox" do |v|
       v.customize ["modifyvm", :id, "--name", "pjaySW"]
     end
+    pjaySW.vm.provision "shell", path: "scripts/worker.sh"
+    # pjaySW.vm.provision "shell", inline: <<-SHELL
+    # sudo apt update -y
+    # sudo apt install net-tools -y
+    # sudo apt install curl -y
+    # sudo chmod 777 worker.sh
+    # ./worker.sh
+    # SHELL
   end
 
   # Disable automatic box update checking. If you disable this, then
