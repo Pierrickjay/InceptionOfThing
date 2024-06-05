@@ -5,6 +5,7 @@ echo "Let s start clean\n let's delete cluster if exist and create mycluster"
 # Uncomment this two lines before pushing
 k3d cluster delete cluster mycluster
 k3d cluster create mycluster
+# k3d cluster create  mycluster -p "8888:8888@loadbalancer"
 echo "Now let's create name space to manage the infra : 1 for the dev and one for argocd"
 # Uncomment this two lines before pushing
 kubectl delete namespace dev
@@ -19,18 +20,31 @@ sleep 2
 kubectl wait --timeout 600s --for=condition=Ready pods --all -n argocd
 # kubectl config set-context --current --namespace=dev
 
-echo "Open port to port forward"
-kubectl port-forward -n argocd svc/argocd-server 8080:443 &
 
 docker pull wil42/playground:v1
 docker pull wil42/playground:v2
 # TO run the container
-docker run --name mycontainer -d wil42/playground:v2
+docker run --name mycontainer -d wil42/playground:v1
 
 #Apply confs 
 echo " Apply conf file to kubectl"
 kubectl apply -f confs/config.yml
 kubectl wait --timeout 600s --for=condition=Ready pods --all -n argocd
+
+echo 'Password: '
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+echo
+
+echo "Open port to port forward"
+kubectl port-forward -n argocd svc/argocd-server 8080:443 1>/dev/null 2>/dev/null
+# kubectl port-forward -n dev svc/wil-playground 8888:8888 1>/dev/null 2>/dev/null
+# while true
+  # do kubectl port-forward -n argocd svc/argocd-server 8080:443 1>/dev/null 2>/dev/null #THIS IS NOT GOOD THAT MAKE PROCESS RUN IN THE BACK
+# done &
+
+# while true
+  # do kubectl port-forward -n dev svc/wil-playground 8888:8888 1>/dev/null 2>/dev/null #THIS IS NOT GOOD THAT MAKE PROCESS RUN IN THE BACK
+# done &
 
 # bash << EOF & &>/dev/null
 # while true ; do
@@ -38,7 +52,3 @@ kubectl wait --timeout 600s --for=condition=Ready pods --all -n argocd
 # 	sleep 5
 # done
 # EOF
-
-echo 'Password: '
-kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
-echo
