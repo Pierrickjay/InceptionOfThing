@@ -24,6 +24,6 @@ kubectl delete -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/s
 
 # Kill the port forwarding processes
 echo "Killing port forwarding processes"
-pkill -f "kubectl port-forward"
+pkill -f "run.sh"
 
 echo "Cleanup process completed"
