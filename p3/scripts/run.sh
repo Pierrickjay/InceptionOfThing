@@ -1,30 +1,25 @@
 echo "Firstly let's Install everything that we need to run our app"
 ./scripts/install.sh
 
-echo "Let s start clean\n let's delete cluster if exist and create mycluster"
-# Uncomment this two lines before pushing
+echo "Deleting cluster if exist and create one"
 k3d cluster delete cluster mycluster
 k3d cluster create mycluster
-# k3d cluster create  mycluster -p "8888:8888@loadbalancer"
+
 echo "Now let's create name space to manage the infra : 1 for the dev and one for argocd"
-# Uncomment this two lines before pushing
-kubectl delete namespace dev
-kubectl delete namespace argocd
+kubectl get namespace dev &>/dev/null && kubectl delete namespace dev
+kubectl get namespace argocd &>/dev/null && kubectl delete namespace argocd
 kubectl create namespace dev
 kubectl create namespace argocd
-# kubectl config set-context --current --namespace=argocd
+
+
 echo "Let's deploy argocd"
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 echo "wait for argo cd" 
 sleep 2
 kubectl wait --timeout 600s --for=condition=Ready pods --all -n argocd
-# kubectl config set-context --current --namespace=dev
-
 
 docker pull wil42/playground:v1
 docker pull wil42/playground:v2
-# TO run the container
-docker run --name mycontainer -d wil42/playground:v1
 
 #Apply confs 
 echo " Apply conf file to kubectl"
@@ -36,19 +31,10 @@ kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.pas
 echo
 
 echo "Open port to port forward"
-kubectl port-forward -n argocd svc/argocd-server 8080:443 1>/dev/null 2>/dev/null
-# kubectl port-forward -n dev svc/wil-playground 8888:8888 1>/dev/null 2>/dev/null
-# while true
-  # do kubectl port-forward -n argocd svc/argocd-server 8080:443 1>/dev/null 2>/dev/null #THIS IS NOT GOOD THAT MAKE PROCESS RUN IN THE BACK
-# done &
+while true
+  do kubectl port-forward -n argocd svc/argocd-server 8080:443 1>/dev/null 2>/dev/null
+done &
 
-# while true
-  # do kubectl port-forward -n dev svc/wil-playground 8888:8888 1>/dev/null 2>/dev/null #THIS IS NOT GOOD THAT MAKE PROCESS RUN IN THE BACK
-# done &
-
-# bash << EOF & &>/dev/null
-# while true ; do
-# 	sudo kubectl port-forward -n dev svc/wil-app 8888:8888 &>/dev/null
-# 	sleep 5
-# done
-# EOF
+while true
+  do kubectl port-forward -n dev svc/wil42-playground 8888:8888 1>/dev/null 2>/dev/null 
+done &
