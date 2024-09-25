@@ -59,13 +59,17 @@ echo "Credentials -> Username: root - Password: $GITLAB_PASSWORD\n"
 echo "GUI available at address: http://gitlab.com/"
 
 echo "Open port to port forward"
-while true
-  do kubectl port-forward -n argocd svc/argocd-server 8080:443 1>/dev/null 2>/dev/null
-done &
 
 while true
   do kubectl port-forward -n gitlab svc/webservice 8081:8181 1>/dev/null 2>/dev/null
 done
+
+echo "kgwpegmoaekgpokregreg"
+
+while true
+  do kubectl port-forward -n argocd svc/argocd-server 8080:443 1>/dev/null 2>/dev/null
+done &
+
 
 while true
   do kubectl port-forward -n gitlab svc/gitlab-gitlab-shell 32022:32022 1>/dev/null 2>/dev/null
