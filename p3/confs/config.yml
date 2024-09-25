@@ -7,7 +7,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/Pierrickjay/InceptionOfThing
-    targetRevision: p3Pierrick #branch
+    targetRevision: main
     path: p3/confs
   destination:
     server: 'https://kubernetes.default.svc'
