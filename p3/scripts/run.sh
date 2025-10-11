@@ -28,7 +28,7 @@ docker pull wil42/playground:v2
 #Apply confs 
 echo " Apply conf file to kubectl"
 kubectl apply -f confs/config.yml
-kubectl wait --timeout 600s --for=condition=Ready pods --all -n argocd
+kubectl wait --timeout 600s --for=condition=Ready pods --all -n dev
 
 echo 'Password: '
 kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
