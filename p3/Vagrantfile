@@ -1,0 +1,46 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "debian/bookworm64"
+
+  config.vm.provider :virtualbox do |vb|
+    vb.customize ["modifyvm", :id, "--memory", 4096]
+    vb.customize ["modifyvm", :id, "--cpus", "2"]
+    vb.customize ["modifyvm", :id, "--name", "pjayS-k3d"]
+  end
+
+  config.vm.define "pjayS-k3d" do |server|
+    server.vm.hostname = "pjayS-k3d"
+    server.vm.network "private_network", ip: "192.168.56.110"
+
+    # Port forwarding for ArgoCD UI
+    server.vm.network "forwarded_port", guest: 8080, host: 8080, host_ip: "127.0.0.1"
+
+    # Port forwarding for Application
+    server.vm.network "forwarded_port", guest: 8888, host: 8888, host_ip: "127.0.0.1"
+
+    # Sync scripts and confs folders
+    server.vm.synced_folder "./scripts", "/home/vagrant/scripts"
+    server.vm.synced_folder "./confs", "/home/vagrant/confs"
+
+    server.vm.provision "shell", inline: <<-SHELL
+      export DEBIAN_FRONTEND=noninteractive
+
+      echo "Installing dependencies..."
+      cd /home/vagrant
+      chmod +x scripts/*.sh
+
+      # Run the install script as root
+      ./scripts/install.sh
+
+      # Add vagrant user to docker group
+      usermod -aG docker vagrant
+
+      echo "Setup complete! Now running the main script..."
+
+      # Run the main script as vagrant user
+      su - vagrant -c "cd /home/vagrant && ./scripts/run.sh"
+    SHELL
+  end
+end

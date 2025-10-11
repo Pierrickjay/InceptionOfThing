@@ -1,8 +1,10 @@
+#!/bin/bash
+
 echo "Firstly let's Install everything that we need to run our app"
-./scripts/install.sh
+bash scripts/install.sh
 
 echo "Deleting cluster if exist and create one"
-k3d cluster delete cluster mycluster
+k3d cluster delete mycluster 2>/dev/null || true
 k3d cluster create mycluster
 
 echo "Now let's create name space to manage the infra : 1 for the dev and one for argocd"
@@ -31,10 +33,29 @@ kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.pas
 echo
 
 echo "Open port to port forward"
-while true
-  do kubectl port-forward -n argocd svc/argocd-server 8080:443 1>/dev/null 2>/dev/null
-done &
+echo "Starting port forwarding in background..."
 
-while true
-  do kubectl port-forward -n dev svc/wil42-playground 8888:8888 1>/dev/null 2>/dev/null 
-done &
+# Port forward ArgoCD on all interfaces to allow access from host
+kubectl port-forward -n argocd --address 0.0.0.0 svc/argocd-server 8080:443 &
+ARGO_PID=$!
+
+# Port forward application on all interfaces
+kubectl port-forward -n dev --address 0.0.0.0 svc/wil42-playground 8888:8888 &
+APP_PID=$!
+
+echo ""
+echo "=========================================="
+echo "Setup complete!"
+echo "=========================================="
+echo "ArgoCD UI: https://localhost:8080"
+echo "Username: admin"
+echo "Password: (see above)"
+echo ""
+echo "Application: http://localhost:8888"
+echo "=========================================="
+echo ""
+echo "Port forwarding is running (PIDs: $ARGO_PID, $APP_PID)"
+echo "Press Ctrl+C to stop"
+
+# Keep the script running
+wait

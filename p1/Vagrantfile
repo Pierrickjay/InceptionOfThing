@@ -35,13 +35,6 @@ Vagrant.configure("2") do |config|
       v.customize ["modifyvm", :id, "--name", "pjaySW"]
     end
     pjaySW.vm.provision "shell", path: "scripts/worker.sh"
-    # pjaySW.vm.provision "shell", inline: <<-SHELL
-    # sudo apt update -y
-    # sudo apt install net-tools -y
-    # sudo apt install curl -y
-    # sudo chmod 777 worker.sh
-    # ./worker.sh
-    # SHELL
   end
 
   # Disable automatic box update checking. If you disable this, then
