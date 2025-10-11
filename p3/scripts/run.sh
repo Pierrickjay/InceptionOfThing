@@ -3,6 +3,8 @@
 echo "Firstly let's Install everything that we need to run our app"
 bash scripts/install.sh
 
+sleep 5
+
 echo "Deleting cluster if exist and create one"
 k3d cluster delete mycluster 2>/dev/null || true
 k3d cluster create mycluster
