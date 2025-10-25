@@ -1,13 +1,32 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: wil42-app-service
-  labels:
-    app: wil42
+  name: wil42-service
+  namespace: dev
 spec:
   selector:
     app: wil42
   ports:
-  - protocol: TCP
-    port: 8888
-    targetPort: 8888
+    - protocol: TCP
+      port: 8888
+      targetPort: 8888
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: wil42-ingress
+  namespace: dev
+  annotations:
+    ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: wil42-service
+            port:
+              number: 8888

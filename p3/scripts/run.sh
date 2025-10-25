@@ -27,7 +27,7 @@ docker pull wil42/playground:v2
 
 #Apply confs 
 echo " Apply conf file to kubectl"
-kubectl apply -f confs/config.yml
+kubectl apply -f confs/
 kubectl wait --timeout 600s --for=condition=Ready pods --all -n dev
 
 echo 'Password: '
