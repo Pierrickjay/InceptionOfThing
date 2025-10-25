@@ -5,16 +5,16 @@ bash scripts/install.sh
 
 sleep 5
 
-echo "Deleting cluster if exist and create one"
+echo "Deleting cluster if exist and create one with proper port mapping"
 k3d cluster delete mycluster 2>/dev/null || true
-k3d cluster create mycluster
+# Map port 8888 on the host to port 80 in the loadbalancer
+k3d cluster create mycluster -p "8888:80@loadbalancer"
 
 echo "Now let's create name space to manage the infra : 1 for the dev and one for argocd"
 kubectl get namespace dev &>/dev/null && kubectl delete namespace dev
 kubectl get namespace argocd &>/dev/null && kubectl delete namespace argocd
 kubectl create namespace dev
 kubectl create namespace argocd
-
 
 echo "Let's deploy argocd"
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
@@ -41,11 +41,6 @@ echo "Starting port forwarding in background..."
 kubectl port-forward -n argocd --address 0.0.0.0 svc/argocd-server 8080:443 &
 ARGO_PID=$!
 
-# Forward port 8888 to Traefik's port 80 using iptables
-echo "Setting up iptables forwarding from port 8888 to Traefik..."
-sudo iptables -t nat -A PREROUTING -p tcp --dport 8888 -j REDIRECT --to-port 80
-sudo iptables -t nat -A OUTPUT -p tcp -o lo --dport 8888 -j REDIRECT --to-port 80
-
 echo ""
 echo "=========================================="
 echo "Setup complete!"
@@ -54,11 +49,11 @@ echo "ArgoCD UI: https://localhost:8080"
 echo "Username: admin"
 echo "Password: (see above)"
 echo ""
-echo "Application: http://localhost:8888 (via Ingress)"
+echo "Application: http://localhost:8888"
 echo "=========================================="
 echo ""
 echo "Port forwarding is running (PID: $ARGO_PID)"
 echo "Press Ctrl+C to stop"
 
 # Keep the script running
-wait
+wait    

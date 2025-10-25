@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: wil42-app-service
+  labels:
+    app: wil42
+spec:
+  selector:
+    app: wil42
+  ports:
+  - protocol: TCP
+    port: 8888
+    targetPort: 8888
