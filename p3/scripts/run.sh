@@ -41,9 +41,10 @@ echo "Starting port forwarding in background..."
 kubectl port-forward -n argocd --address 0.0.0.0 svc/argocd-server 8080:443 &
 ARGO_PID=$!
 
-# Port forward application on all interfaces
-kubectl port-forward -n dev --address 0.0.0.0 svc/wil42-playground 8888:8888 &
-APP_PID=$!
+# Forward port 8888 to Traefik's port 80 using iptables
+echo "Setting up iptables forwarding from port 8888 to Traefik..."
+sudo iptables -t nat -A PREROUTING -p tcp --dport 8888 -j REDIRECT --to-port 80
+sudo iptables -t nat -A OUTPUT -p tcp -o lo --dport 8888 -j REDIRECT --to-port 80
 
 echo ""
 echo "=========================================="
@@ -53,10 +54,10 @@ echo "ArgoCD UI: https://localhost:8080"
 echo "Username: admin"
 echo "Password: (see above)"
 echo ""
-echo "Application: http://localhost:8888"
+echo "Application: http://localhost:8888 (via Ingress)"
 echo "=========================================="
 echo ""
-echo "Port forwarding is running (PIDs: $ARGO_PID, $APP_PID)"
+echo "Port forwarding is running (PID: $ARGO_PID)"
 echo "Press Ctrl+C to stop"
 
 # Keep the script running
