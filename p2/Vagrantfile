@@ -1,14 +1,25 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# All Vagrant configuration is done below. The "2" in Vagrant.configure
+# configures the configuration version (we support older styles for
+# backwards compatibility). Please don't change it unless you know what
+# you're doing.
 Vagrant.configure("2") do |config|
-  config.vm.box = "generic/alpine312"
-  config.vm.define "axlamberS" do |webServer|
-    webServer.vm.network "private_network", ip: "192.168.56.110"
-    webServer.vm.synced_folder "./confs", "/vagrant", type: "virtualbox"
-    webServer.vm.hostname = "axlamberS"
-    webServer.vm.provider "virtualbox" do |vb|
-      vb.memory = "2048"
-      vb.cpus = "1"
-      vb.name = "axlamberS"
+  config.vm.box = "debian/bookworm64"
+
+  config.vm.define "aboulestH" do |host|
+    host.vm.network "private_network", ip: "192.168.56.110"
+    host.vm.hostname = "aboulestH"
+
+    host.vm.provider "virtualbox" do |v|
+      v.customize ["modifyvm", :id, "--name", "aboulestH"]
+      v.memory = 2048
+      v.cpus = 2
     end
-    webServer.vm.provision "shell", path: "./scripts/setup.sh"
+  
+    host.vm.provision "file", source: "./confs", destination: "/tmp/confs"
+    host.vm.provision "shell", path: "./scripts/install.sh"
   end
+
 end
